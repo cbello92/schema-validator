@@ -41,7 +41,14 @@ export class UserModel extends ModelSchema {
         "userPhone": {
             "alias": "Telefono",
             "type": "string",
-            "required": true
+            "required": false,
+            "defaultValue": null,
+            "validate": function (value) {
+                if(value.length === 1) {
+                    return { ok: false, message: "debe contener más de 1 caracter" }
+                }
+                return { ok: true }
+            }
         },
         "userActive": {
             "alias": "Estado de usuario",

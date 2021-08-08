@@ -1,36 +1,63 @@
 export class ModelSchema {
-  constructor (schema) {
-    this.schemaModel = schema
+  constructor(schema) {
+    this.schemaModel = schema;
+
+    // Set de data types
+    this.dataTypes = [
+      { "name": "string", "showMessage": "texto" },
+      { "name": "boolean", "showMessage": "verdadero o falso" },
+      { "name": "number", "showMessage": "númerico" },
+      { "name": "object", "showMessage": "objeto" },
+      { "name": "function", "showMessage": "función" }
+    ];
+
+    // Alamecenes para errores
+    this.errors = [];
+    this.dataErrors = {};
   }
 
-  useDefaultValue (property, element) {
+  useDefaultValue(property, element) {
     if (
       !property &&
       this.schemaModel[element].hasOwnProperty('required') &&
       this.schemaModel[element].required === false &&
       this.schemaModel[element].hasOwnProperty('defaultValue')
     ) {
-      return true
+      return true;
     }
-    return false
+    return false;
   }
 
-  isValidDataType (property, body) {
+  isValidDataType(property, body) {
     if (
-      property &&
-      body &&
-      typeof body[property] !== this.schemaModel[property].type
+      (
+        property &&
+        body &&
+        typeof body[property] !== this.schemaModel[property].type
+      ) ||
+      (
+        property && this.schemaModel[property].type === 'number' && typeof body[property] === "number" && body[property].toString() === "NaN"
+      ) 
     ) {
-      return false
+      return false;
     }
 
-    return true
+    return true;
   }
 
-  async isValidSchema (body, particularFields = false) {
+  setMessageTypeData(dataType) {
+    return this.dataTypes.find(type => type.name === dataType).showMessage || '';
+  }
+
+  setErrorsFound (property, newError) {
+    //let { errors, dataErrors, property } = params;
+    this.errors = [...this.errors, newError];
+    this.dataErrors[property] = [...this.dataErrors[property], newError];
+  }
+
+  async isValidSchema(body, particularFields = false) {
     let keysBodyEntry = Object.keys(body)
     let keysSchema = Object.keys(this.schemaModel)
-    let errors = []
 
     // SE VALIDA QUE NO EXISTAN PROPIEDADES CON VALORES UNDEFINED
     if (
@@ -38,12 +65,7 @@ export class ModelSchema {
         key => body.hasOwnProperty(key) && body[key] === undefined
       )
     ) {
-      errors = [...errors, `No se permiten valores undefined`]
-    }
-
-    // SI ENVÍAMOS PROPIEDADES NO DEFINIDAS EN EL MODEL
-    if (keysBodyEntry.some(key => !this.schemaModel.hasOwnProperty(key))) {
-      errors = [...errors, `Existen propiedades no permitidas aquí`]
+      this.errors = [...this.errors, `No se permiten valores indefinidos`]
     }
 
     // FILTRAMOS SÓLO LAS PROPIEDADES DEL ESQUEMA SEGÚN EL BODY QUE ESTAMOS RECIBIENDO
@@ -52,12 +74,11 @@ export class ModelSchema {
     }
 
     let orderBody = {}
-    let dataErrors = {}
 
-    for (let index = 0; index < keysSchema.length; index++) {
-      const propertySchema = keysSchema[index]
-      if (!dataErrors.hasOwnProperty(propertySchema)) {
-        dataErrors[propertySchema] = []
+    for (let keyName of keysSchema) {
+      const propertySchema = keyName;
+      if (!this.dataErrors.hasOwnProperty(propertySchema)) {
+        this.dataErrors[propertySchema] = [];
       }
 
       let findKey = keysBodyEntry.find(x => x === propertySchema)
@@ -69,19 +90,15 @@ export class ModelSchema {
         body[propertySchema] = this.schemaModel[propertySchema].defaultValue
       }
       let dataTypeIsValid = !this.isValidDataType(findKey, body)
-        ? `${this.schemaModel[propertySchema].alias} debe ser de tipo ${this.schemaModel[propertySchema].type}`
+        ? `${this.schemaModel[propertySchema].alias} debe ser de tipo ${this.setMessageTypeData(this.schemaModel[propertySchema].type)}`
         : null
 
       if (
         this.schemaModel[propertySchema].hasOwnProperty('type') &&
-        body[propertySchema] &&
+        body[propertySchema] !== null &&
         dataTypeIsValid
       ) {
-        errors = [...errors, dataTypeIsValid]
-        dataErrors[propertySchema] = [
-          ...dataErrors[propertySchema],
-          dataTypeIsValid
-        ]
+        this.setErrorsFound(propertySchema, dataTypeIsValid);
       }
 
       if (
@@ -96,11 +113,7 @@ export class ModelSchema {
           body[propertySchema] === null)
       ) {
         let stringRequired = `${this.schemaModel[propertySchema].alias} es requerido`
-        errors = [...errors, stringRequired]
-        dataErrors[propertySchema] = [
-          ...dataErrors[propertySchema],
-          stringRequired
-        ]
+        this.setErrorsFound(propertySchema, stringRequired);
       }
 
       if (
@@ -110,25 +123,21 @@ export class ModelSchema {
         body[propertySchema].length > this.schemaModel[propertySchema].maxLength
       ) {
         let maxCharactersString = `${this.schemaModel[propertySchema].alias} puede contener hasta ${this.schemaModel[propertySchema].maxLength} caracteres`
-        errors = [...errors, maxCharactersString]
-        dataErrors[propertySchema] = [
-          ...dataErrors[propertySchema],
-          maxCharactersString
-        ]
+        this.setErrorsFound(propertySchema, maxCharactersString);
       }
 
       if (
         findKey &&
         this.schemaModel[propertySchema].hasOwnProperty('validate') &&
-        body[propertySchema]
+        typeof this.schemaModel[propertySchema].validate === "function" &&
+        body[propertySchema] !== null
       ) {
         let validate = this.schemaModel[propertySchema].validate(
           body[propertySchema]
-        )
+        );
         if (validate.hasOwnProperty('ok') && validate.ok === false) {
-          let message = `${this.schemaModel[propertySchema].alias}: ${validate?.message}`
-          errors = [...errors, message]
-          dataErrors[propertySchema] = [...dataErrors[propertySchema], message]
+          let message = `${this.schemaModel[propertySchema].alias}: ${validate?.message}`;
+          this.setErrorsFound(propertySchema, message);
         } else {
           if (validate[propertySchema]) {
             body[propertySchema] = validate[propertySchema]
@@ -136,8 +145,8 @@ export class ModelSchema {
         }
       }
 
-      errors = [...new Set(errors.map(e => e))]
-      dataErrors[propertySchema] = [...new Set(dataErrors[propertySchema].map(e => e))];
+      this.errors = [...new Set(this.errors.map(e => e))]
+      this.dataErrors[propertySchema] = [...new Set(this.dataErrors[propertySchema].map(e => e))];
 
       if (
         !this.schemaModel[propertySchema].hasOwnProperty('notIncluded') &&
@@ -147,21 +156,21 @@ export class ModelSchema {
       }
     }
 
-    let keysDataErrorsWithArrayEmpty = Object.keys(dataErrors)
-          .filter(key => dataErrors[key] && dataErrors[key].length === 0);
-    
-          keysDataErrorsWithArrayEmpty.forEach(key => {
-        if(dataErrors.hasOwnProperty(key)) {
-            delete dataErrors[key];
-        }
+    let keysErrorsDataWithArrayEmpty = Object.keys(this.dataErrors)
+      .filter(key => this.dataErrors[key] && this.dataErrors[key].length === 0);
+
+    keysErrorsDataWithArrayEmpty.forEach(key => {
+      if (this.dataErrors.hasOwnProperty(key)) {
+        delete this.dataErrors[key];
+      }
     })
 
-    if (errors.length > 0) {
+    if (this.errors.length > 0) {
 
       return {
         ok: false,
-        dataErrors,
-        messages: errors
+        dataErrors: this.dataErrors,
+        messages: this.errors
       }
     }
 

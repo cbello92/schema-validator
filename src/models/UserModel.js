@@ -13,6 +13,11 @@ export class UserModel extends ModelSchema {
             "type": "string",
             "required": true
         },
+        "userAge": {
+            "alias": "Edad",
+            "type": "number",
+            "required": true
+        },
         "userPassword": {
             "alias": "Contraseña",
             "type": "string",
@@ -53,7 +58,7 @@ export class UserModel extends ModelSchema {
         "userActive": {
             "alias": "Estado de usuario",
             "type": "boolean",
-            "required": false,
+            "required": true,
             "defaultValue": false
         }
       }

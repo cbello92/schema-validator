@@ -8,7 +8,8 @@ const body = {
     "userPassword": "cbello1992",
     "userEmail": "camilo.bello92@gmail.com",
     "userRut": "18.135.346-5",
-    "userPhone": "+56987546512"
+    "userPhone": "+56987546512",
+    "userAge": Number(null)
 };
 
 (async function () {

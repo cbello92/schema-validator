@@ -2,16 +2,24 @@
   "name": "schema-validator",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/modelSchema.js",
   "type": "module",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon -L src/index.js --exec babel-node",
     "build": "rm -rf ./src/public/documentation && babel src --out-dir dist --copy-files && rm -rf ./dist/logs && npm run docs"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cbello92/schema-validator.git"
+  },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Camilo Ismael Bello Peñailillo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cbello92/schema-validator.git/issues"
+  },
+  "homepage": "https://github.com/cbello92/schema-validator.git#readme",
   "devDependencies": {
     "@babel/cli": "^7.14.5",
     "@babel/core": "^7.14.6",
@@ -20,5 +28,6 @@
     "@babel/plugin-transform-runtime": "^7.14.5",
     "@babel/preset-env": "^7.14.7",
     "nodemon": "^2.0.12"
-  }
+  },
+  "dependencies": {}
 }

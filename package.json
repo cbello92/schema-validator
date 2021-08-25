@@ -1,13 +1,12 @@
 {
-  "name": "schema-validator",
+  "name": "simple-model-schema-validator",
   "version": "1.0.0",
   "description": "",
   "main": "dist/modelSchema.js",
-  "type": "module",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon -L src/index.js --exec babel-node",
-    "build": "rm -rf ./src/public/documentation && babel src --out-dir dist --copy-files && rm -rf ./dist/logs && npm run docs"
+    "build": "babel src --out-dir dist"
   },
   "repository": {
     "type": "git",

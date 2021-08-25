@@ -1,5 +1,5 @@
 {
-  "name": "simple-model-schema-validator",
+  "name": "simple-validator-model",
   "version": "1.0.0",
   "description": "",
   "main": "dist/modelSchema.js",

@@ -38,7 +38,7 @@ Por ejemplo creamos un <strong>UserModel</strong> con la siguiente definción:
 
 ```js
 //importamos el paquete
-import { ModelSchema } from "simple-model-schema-validator"; 
+import { ModelSchema } from "simple-validator-model"; 
 export class UserModel extends ModelSchema {
     // Contructor de la clase que representa User
     constructor () {

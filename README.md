@@ -274,7 +274,7 @@ export const createNewUser = async (body) => {
     // si todo ha ido bien, se procede a persistir en base datos el usuario, utilizando
     // el body que retorna el método isValidSchema (bodyValidate.body)
     const userCreated = await userRepository.save(bodyValidate.body);
-    return EventsDomain.successfullySaved(DepartmentDTO.single(userCreated));
+    return EventsDomain.successfullySaved(UsertDTO.single(userCreated));
 }
 ```
 

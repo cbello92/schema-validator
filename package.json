@@ -1,6 +1,6 @@
 {
   "name": "simple-model-schema-validator",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/modelSchema.js",
   "scripts": {

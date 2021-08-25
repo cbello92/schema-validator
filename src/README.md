@@ -1,1 +1,1 @@
-# Schema validator
+# Simple Model Schema Validator

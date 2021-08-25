@@ -137,15 +137,15 @@ _El retorno que deben tener las funciones encapsuladas en la propiedad <strong>v
 1. Caso negativo :x:
 ```json
 return {
-    ok: false,
-    message: "Mensaje de error"
+    "ok": false,
+    "message": "Mensaje de error"
 }
 ```
 
 1. Caso positivo :white_check_mark:
 ```json
 return {
-    ok: true
+    "ok": true
 }
 ```
 
